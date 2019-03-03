@@ -1,0 +1,8 @@
+﻿  main.cpp
+c:\users\andrew\documents\github\cs3113_assignments\hw1\nyucodebase\main.cpp(112): warning C4305: 'initializing': truncation from 'double' to 'float'
+c:\users\andrew\documents\github\cs3113_assignments\hw1\nyucodebase\main.cpp(131): warning C4305: 'initializing': truncation from 'double' to 'float'
+c:\users\andrew\documents\github\cs3113_assignments\hw1\nyucodebase\main.cpp(158): warning C4305: 'initializing': truncation from 'double' to 'float'
+c:\users\andrew\documents\github\cs3113_assignments\hw1\nyucodebase\main.cpp(214): warning C4305: 'initializing': truncation from 'double' to 'float'
+  ShaderProgram.cpp
+  Generating Code...
+  NYUCodebase.vcxproj -> C:\Users\Andrew\Documents\Github\cs3113_Assignments\hw1\Debug\NYUCodebase.exe
