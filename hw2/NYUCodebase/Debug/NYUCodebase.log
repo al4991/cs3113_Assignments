@@ -1,0 +1,4 @@
+﻿  main.cpp
+c:\users\andrew\documents\github\cs3113_assignments\hw2\nyucodebase\main.cpp(166): warning C4244: '+=': conversion from 'double' to 'float', possible loss of data
+c:\users\andrew\documents\github\cs3113_assignments\hw2\nyucodebase\main.cpp(173): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+  NYUCodebase.vcxproj -> C:\Users\Andrew\Documents\Github\cs3113_Assignments\hw2\Debug\NYUCodebase.exe
