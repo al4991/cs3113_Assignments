@@ -92,7 +92,33 @@ public:
 		x_pos += (elapsed * 0.5f * x_dir); 
 		y_pos += (elapsed * 0.5f * y_dir); 
 	}
+
+	/* 
+	Returns an int to represent whether the object is off screen, and wihch side it is on. Possible returns listed below
+		-1 : not offscreen
+		0 : offscreen, and went off the left side (computer wins)
+		1 : offscreen and went off the right side (player wins)
+	*/
+	int checkOffscreen(float x, float y) {
+		bool offX = false;
+		bool offY = false;
+		if (x_pos > x || x_pos < (x * -1.0f)) {
+			offX = true;
+		}
+		if (y_pos > y || y_pos < (y * -1.0f)) {
+			offY = true;
+		}
+		
+		if (!offX && !offY) {
+			return -1;
+		}
+		else {
+			if (x_pos > 0.0f) { return 1;}
+			else { return 0;}
+		}
+	}
 };
+
 bool collisionCheck(Object& obj1, Object& obj2) {
 	float x_distance = fabs(obj1.x_pos - obj2.x_pos) - ((obj1.half_width + obj2.half_width));
 	float y_distance = fabs(obj1.y_pos - obj2.y_pos) - ((obj1.half_height + obj2.half_height));
@@ -102,13 +128,15 @@ bool collisionCheck(Object& obj1, Object& obj2) {
 	return false;
 }
 
-void draw_midline(ShaderProgram& p) {
+void drawMidline(ShaderProgram& p) {
 	Object block = Object(0.07f, 0.07f, 0.0f, 0.95f);
 	for (int i = 0; i < 15; i++) {
 		block.draw(p); 
 		block.y_pos -= 0.135f;
 	}
 }
+
+
 
 int main(int argc, char *argv[])
 {
@@ -133,6 +161,7 @@ int main(int argc, char *argv[])
 	projectionMatrix = glm::ortho(-1.777f, 1.777f, -1.0f, 1.0f, -1.0f, 1.0f);
 	glUseProgram(program.programID);
 
+	int offScreenCheck = -1; 
 	// Creating objects 
 	Object paddle1 = Object(0.07f, 0.25f, -1.465f);
 	Object paddle2 = Object(0.07f, 0.25f, 1.465f);
@@ -158,16 +187,29 @@ int main(int argc, char *argv[])
 				done = true;
 			}
 		}
-		if (keys[SDL_SCANCODE_UP] || keys[SDL_SCANCODE_W]) {
+		if (keys[SDL_SCANCODE_W]) {
 			if (!collisionCheck(paddle1, border1)) {
 				paddle1.y_pos += (elapsed * .7);
 
 			}
 		}
-		else if (keys[SDL_SCANCODE_DOWN] || keys[SDL_SCANCODE_S]) {
+		else if (keys[SDL_SCANCODE_S]) {
 			
 			if (!collisionCheck(paddle1, border2)) {
 				paddle1.y_pos -= (elapsed * .7);
+
+			}
+		}
+		if (keys[SDL_SCANCODE_UP]) {
+			if (!collisionCheck(paddle2, border1)) {
+				paddle2.y_pos += (elapsed * .7);
+
+			}
+		}
+		else if (keys[SDL_SCANCODE_DOWN]) {
+
+			if (!collisionCheck(paddle2, border2)) {
+				paddle2.y_pos -= (elapsed * .7);
 
 			}
 		}
@@ -177,7 +219,24 @@ int main(int argc, char *argv[])
 		program.SetViewMatrix(viewMatrix);
 		
 		glUseProgram(program.programID); 
-//=======================================================================================
+
+		// Checking for offscreens
+		offScreenCheck = ball.checkOffscreen(1.777f, 1.0f);
+		if (offScreenCheck != -1) {
+			if (offScreenCheck == 0) {
+				ball.x_pos = 0; 
+				ball.y_pos = 0; 
+				ball.x_dir = 1.0f; 
+			}
+			if (offScreenCheck == 1) {
+				ball.x_pos = 0;
+				ball.y_pos = 0;
+				ball.x_dir = -1.0f;
+			}
+		}
+
+
+
 		// Ball 
 		if (collisionCheck(ball, border1) || collisionCheck(ball, border2)) {
 			ball.y_dir *= -1.0f;
@@ -194,16 +253,15 @@ int main(int argc, char *argv[])
 
 		// Paddles 
 		paddle1.draw(program); 
-		paddle2.y_pos += ((elapsed * 3.0f) * paddle2.y_dir); 
-		if (collisionCheck(paddle2, border1) || collisionCheck(paddle2, border2)) {
-			paddle2.y_dir *= -1.0f;
-		}
+		//paddle2.y_pos += ((elapsed * 3.0f) * paddle2.y_dir); 
+		//if (collisionCheck(paddle2, border1) || collisionCheck(paddle2, border2)) {
+		//	paddle2.y_dir *= -1.0f;
+		//}
 		paddle2.draw(program); 
 
 
 		// Midline
-		draw_midline(program); 
-
+		drawMidline(program); 
 		
 	
 		
