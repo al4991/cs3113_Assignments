@@ -200,7 +200,7 @@ int main(int argc, char *argv[])
 
 			}
 		}
-		if (keys[SDL_SCANCODE_UP]) {
+		/*if (keys[SDL_SCANCODE_UP]) {
 			if (!collisionCheck(paddle2, border1)) {
 				paddle2.y_pos += (elapsed * .7);
 
@@ -212,7 +212,7 @@ int main(int argc, char *argv[])
 				paddle2.y_pos -= (elapsed * .7);
 
 			}
-		}
+		}*/
         glClear(GL_COLOR_BUFFER_BIT);
 
 		program.SetProjectionMatrix(projectionMatrix);
@@ -253,10 +253,26 @@ int main(int argc, char *argv[])
 
 		// Paddles 
 		paddle1.draw(program); 
-		//paddle2.y_pos += ((elapsed * 3.0f) * paddle2.y_dir); 
-		//if (collisionCheck(paddle2, border1) || collisionCheck(paddle2, border2)) {
-		//	paddle2.y_dir *= -1.0f;
-		//}
+
+		
+		if (collisionCheck(paddle2, border1)) {
+			paddle2.y_dir = -1.0f;
+		}
+		else if (collisionCheck(paddle2, border2)) {
+			paddle2.y_dir = 1.0f;
+		}
+		else {
+			if (ball.y_pos >= paddle2.y_pos) {
+				paddle2.y_dir = 1.0f; 
+			}
+			if (ball.y_pos < paddle2.y_pos) {
+				paddle2.y_dir = -1.0f;
+			}
+		}
+		
+	
+		paddle2.y_pos += ((elapsed * 0.7f) * paddle2.y_dir); 
+
 		paddle2.draw(program); 
 
 
