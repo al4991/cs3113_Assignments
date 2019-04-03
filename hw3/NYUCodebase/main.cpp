@@ -20,12 +20,14 @@
 #include <vector> 
 #include <iostream> 
 #include <algorithm>
+#include <string>
 #include <math.h>
 using namespace std;
 
 
 SDL_Window* displayWindow;
-
+enum GameMode {STATE_MAIN_MENU, STATE_GAME};
+GameMode mode = STATE_MAIN_MENU;
 
 class SheetSprite {
 
@@ -186,17 +188,15 @@ int main(int argc, char *argv[])
 	program.Load(RESOURCE_FOLDER"vertex_textured.glsl", RESOURCE_FOLDER"fragment_textured.glsl");
 
 	GLuint spriteSheetTexture = LoadTexture(RESOURCE_FOLDER"sheet.png");
-
+	GLuint fontTexture = LoadTexture(RESOURCE_FOLDER"font1.png");
 
 	float lastFrameTicks = 0.0f;
-
 
 	glm::mat4 projectionMatrix = glm::mat4(1.0f);
 	glm::mat4 modelMatrix = glm::mat4(1.0f);
 	glm::mat4 viewMatrix = glm::mat4(1.0f);
 	projectionMatrix = glm::ortho(-1.0f, 1.0f, -1.777f, 1.777f, -1.0f, 1.0f);
 	glUseProgram(program.programID);
-
 
 	// Creating objects 
 
@@ -211,43 +211,46 @@ int main(int argc, char *argv[])
 		newEnt.sprite = SheetSprite(spriteSheetTexture, 423.0f / 1024.0f, 728.0f / 1024.0f, 93.0f / 1024.0f, 84.0f / 1024.0f, 0.2f);
 		enemies.push_back(newEnt);
 	}
+
 	std::vector<Entity> bullets;
+
+	std::vector<Entity> message; 
+	string message1 = "SPACE";
+	string message2 = "INVADERS";
+	string message3 = "Click space to start";
+	for (int i = 0; i < message1.size(); i++) {
+		float x = (-0.6f + (float)(i * 0.2f));
+		int ind = (int)message1[i];
+		Entity newEnt = Entity(0.2f, 0.2f, x, 1.6f);
+		float u = (float)(((int)ind) % 16) / (float)16;
+		float v = (float)(((int)ind) / 16) / (float)16;
+		newEnt.sprite = SheetSprite(fontTexture, u, v, 1.0 / (float)16, 1.0 / (float)16, .2f);
+		message.push_back(newEnt);
+	}
+	for (int i = 0; i < message2.size(); i++) {
+		float x = (-0.6f + (float)(i * 0.2f));
+		int ind = (int)message2[i];
+		Entity newEnt = Entity(0.2f, 0.2f, x, 1.4f);
+		float u = (float)(((int)ind) % 16) / (float)16;
+		float v = (float)(((int)ind) / 16) / (float)16;
+		newEnt.sprite = SheetSprite(fontTexture, u, v, 1.0 / (float)16, 1.0 / (float)16, .2f);
+		message.push_back(newEnt);
+	}	
+	for (int i = 0; i < message3.size(); i++) {
+		float x = (-0.95f + (float)(i * 0.1f));
+		int ind = (int)message3[i];
+		Entity newEnt = Entity(0.1f, 0.1f, x, -0.6f);
+		float u = (float)(((int)ind) % 16) / (float)16;
+		float v = (float)(((int)ind) / 16) / (float)16;
+		newEnt.sprite = SheetSprite(fontTexture, u, v, 1.0 / (float)16, 1.0 / (float)16, .1f);
+		message.push_back(newEnt);
+	}
+	
 
 
 	SDL_Event event;
 	bool done = false;
 	while (!done) {
-
-		float ticks = (float)SDL_GetTicks() / 1000.0f;
-		float elapsed = ticks - lastFrameTicks;
-		lastFrameTicks = ticks;
-		const Uint8 *keys = SDL_GetKeyboardState(NULL);
-
-		while (SDL_PollEvent(&event)) {
-			if (event.type == SDL_QUIT || event.type == SDL_WINDOWEVENT_CLOSE) {
-				done = true;
-			}
-			else if (event.type == SDL_KEYDOWN) {
-				if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
-					Entity newBullet = Entity(0.05f, 0.08f, player.x, player.y + 0.08f);
-					newBullet.y_vel = 1.9f;
-					newBullet.sprite = SheetSprite(spriteSheetTexture, 778.0f / 1024.0f, 557.0f / 1024.0f, 31.0f / 1024.0f, 30.0f / 1024.0f, 0.05f);
-					bullets.push_back(newBullet);
-				}
-			}
-		}
-		if (keys[SDL_SCANCODE_A]) {
-			if (player.x > -0.95f) {
-				player.x -= (elapsed * .7f);
-
-			}
-		}
-		else if (keys[SDL_SCANCODE_D]) {
-			if (player.x < 0.95f) {
-				player.x += (elapsed * .7f);
-
-			}
-		}
 		glClear(GL_COLOR_BUFFER_BIT);
 
 		program.SetProjectionMatrix(projectionMatrix);
@@ -255,31 +258,77 @@ int main(int argc, char *argv[])
 
 		glUseProgram(program.programID);
 
+		if (mode == STATE_MAIN_MENU) {
+			while (SDL_PollEvent(&event)) {
+				if (event.type == SDL_QUIT || event.type == SDL_WINDOWEVENT_CLOSE) {
+					done = true;
+				}
+				else if (event.type == SDL_KEYDOWN) {
+					if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
+						mode = STATE_GAME;
+					}
+				}
+			}
+			for (Entity i : message) {
+				i.draw(program);
+			}
 
-		player.draw(program);
-		for (Entity i : enemies) {
-			i.draw(program);
 		}
+		if (mode == STATE_GAME) {
+			float ticks = (float)SDL_GetTicks() / 1000.0f;
+			float elapsed = ticks - lastFrameTicks;
+			lastFrameTicks = ticks;
+			const Uint8 *keys = SDL_GetKeyboardState(NULL);
 
-		bullets.erase(std::remove_if(bullets.begin(), bullets.end(), shouldRemove), bullets.end());
-
-		for (int i = 0; i < bullets.size(); i++) {
-			bullets[i].timeAlive += elapsed;
-			bullets[i].move(elapsed, 0.0f, 0.7f);
-			bullets[i].draw(program);
-			for (int j = 0; j < enemies.size(); j++) {
-				if (collisionCheck(bullets[i], enemies[j])) {
-					bullets[i].x += 2000.0f;
-					enemies[j].x -= 2000.0f;
+			while (SDL_PollEvent(&event)) {
+				if (event.type == SDL_QUIT || event.type == SDL_WINDOWEVENT_CLOSE) {
+					done = true;
+				}
+				else if (event.type == SDL_KEYDOWN) {
+					if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
+						Entity newBullet = Entity(0.05f, 0.08f, player.x, player.y + 0.08f);
+						newBullet.y_vel = 1.9f;
+						newBullet.sprite = SheetSprite(spriteSheetTexture, 778.0f / 1024.0f, 557.0f / 1024.0f, 31.0f / 1024.0f, 30.0f / 1024.0f, 0.05f);
+						bullets.push_back(newBullet);
+					}
+				}
+			}
+			if (keys[SDL_SCANCODE_A]) {
+				if (player.x > -0.95f) {
+					player.x -= (elapsed * .7f);
 
 				}
 			}
+			else if (keys[SDL_SCANCODE_D]) {
+				if (player.x < 0.95f) {
+					player.x += (elapsed * .7f);
+
+				}
+			}
+
+
+			player.draw(program);
+			for (Entity i : enemies) {
+				i.draw(program);
+			}
+
+			bullets.erase(std::remove_if(bullets.begin(), bullets.end(), shouldRemove), bullets.end());
+
+			for (int i = 0; i < bullets.size(); i++) {
+				bullets[i].timeAlive += elapsed;
+				bullets[i].move(elapsed, 0.0f, 0.7f);
+				bullets[i].draw(program);
+				for (int j = 0; j < enemies.size(); j++) {
+					if (collisionCheck(bullets[i], enemies[j])) {
+						bullets[i].x += 2000.0f;
+						enemies[j].x -= 2000.0f;
+
+					}
+				}
+			}
+			bullets.erase(std::remove_if(bullets.begin(), bullets.end(), offScreen), bullets.end());
+			enemies.erase(std::remove_if(enemies.begin(), enemies.end(), offScreen), enemies.end());
 		}
-		bullets.erase(std::remove_if(bullets.begin(), bullets.end(), offScreen), bullets.end());
-		enemies.erase(std::remove_if(enemies.begin(), enemies.end(), offScreen), enemies.end());
-
-
-		// End of the line pal. Nothing after this point. 
 		SDL_GL_SwapWindow(displayWindow);
 	}
 
