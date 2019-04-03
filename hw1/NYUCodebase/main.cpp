@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
 	
 	glClearColor(0.8f, 1.0f, 1.0f, 1.0f); 
 	glEnable(GL_BLEND); 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	GLuint grookeyTexture = LoadTexture(RESOURCE_FOLDER"grookey.png"); 
 	GLuint sobbleTexture = LoadTexture(RESOURCE_FOLDER"sobble.png"); 

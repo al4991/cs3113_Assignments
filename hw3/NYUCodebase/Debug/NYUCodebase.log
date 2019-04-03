@@ -1,0 +1,6 @@
+﻿  main.cpp
+c:\users\andrew\documents\github\cs3113_assignments\hw3\nyucodebase\main.cpp(125): warning C4804: '<': unsafe use of type 'bool' in operation
+c:\users\andrew\documents\github\cs3113_assignments\hw3\nyucodebase\main.cpp(128): warning C4804: '<': unsafe use of type 'bool' in operation
+c:\users\andrew\documents\github\cs3113_assignments\hw3\nyucodebase\main.cpp(266): warning C4018: '<': signed/unsigned mismatch
+c:\users\andrew\documents\github\cs3113_assignments\hw3\nyucodebase\main.cpp(270): warning C4018: '<': signed/unsigned mismatch
+  NYUCodebase.vcxproj -> C:\Users\Andrew\Documents\Github\cs3113_Assignments\hw3\Debug\NYUCodebase.exe
