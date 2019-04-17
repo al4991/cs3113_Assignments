@@ -1,0 +1,7 @@
+﻿  main.cpp
+c:\users\andrew\documents\github\cs3113_assignments\hw4\nyucodebase\main.cpp(41): warning C4244: 'return': conversion from 'double' to 'float', possible loss of data
+c:\users\andrew\documents\github\cs3113_assignments\hw4\nyucodebase\main.cpp(101): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\andrew\documents\github\cs3113_assignments\hw4\nyucodebase\main.cpp(102): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\users\andrew\documents\github\cs3113_assignments\hw4\nyucodebase\main.cpp(245): warning C4804: '<': unsafe use of type 'bool' in operation
+c:\users\andrew\documents\github\cs3113_assignments\hw4\nyucodebase\main.cpp(248): warning C4804: '<': unsafe use of type 'bool' in operation
+  NYUCodebase.vcxproj -> C:\Users\Andrew\Documents\Github\cs3113_Assignments\hw4\Debug\NYUCodebase.exe
