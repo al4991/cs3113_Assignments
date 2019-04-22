@@ -28,7 +28,11 @@ using namespace std;
 
 
 float accumulator = 0.0f;	
-const int runAnimation[] = { 17, 23 };
+int runAnimation[] = { 13, 13 };
+int forwardframes[] = { 13, 19 };
+int backwardsframes[] = { 1, 7 };
+
+
 const int numFrames = 2;
 float animationElapsed = 0.0f;
 float framesPerSecond = 60.0f;
@@ -40,6 +44,7 @@ enum EntityType { ENTITY_PLAYER, ENTITY_BLOCK, ENTITY_COIN };
 float lerp(float v0, float v1, float t) {
 	return (1.0 - t)*v0 + t * v1;
 }
+// Pick a random sprite each time the program loads
 
 
 class SheetSprite {
@@ -158,6 +163,7 @@ public:
 
 	SheetSprite sprite;
 	std::vector<int> spriteData; 
+	bool yeet; 
 
 	Entity(float width_, float height_, float x_ = 0.0f, float y_ = 0.0f) {
 		height = height_ / 2;
@@ -176,6 +182,7 @@ public:
 		collidedLeft = false; 
 		collidedRight = false; 
 
+		yeet = false; 
 	}
 
 	void Render(ShaderProgram& p) {
@@ -183,13 +190,12 @@ public:
 		modelMatrix = glm::translate(modelMatrix, glm::vec3(x, y, 0.0f));
 		p.SetModelMatrix(modelMatrix);
 
-		//if (isStatic){
-		//	sprite.draw(p);
-		//}
-		//else {
+		if (yeet){
+			sprite.draw(p);
+		}
+		else {
 			sprite.DrawSpriteSheetSprite(p, spriteData[0], spriteData[1], spriteData[2]);
-
-		/*}*/
+		}
 	}
 
 	void resolveCollisionX(Entity& entity) {
@@ -239,18 +245,6 @@ public:
 	}
 };
 
-bool offScreen(Entity ent) {
-	bool offX = true;
-	bool offY = true;
-	if (-1.0f < ent.y < 1.0f) {
-		offY = false;
-	}
-	if (-1.777f < ent.x < 1.777f) {
-		offX = false;
-	}
-	return offX && offY;
-}
-
 GLuint LoadTexture(const char *filePath) {
 	int w, h, comp;
 	unsigned char* image = stbi_load(filePath, &w, &h, &comp, STBI_rgb_alpha);
@@ -268,6 +262,9 @@ GLuint LoadTexture(const char *filePath) {
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
 	stbi_image_free(image);
 	return retTexture;
 }
@@ -275,13 +272,23 @@ GLuint LoadTexture(const char *filePath) {
 bool collisionCheck(Entity& obj1, Entity& obj2) {
 	float x_distance = fabs(obj1.x - obj2.x) - ((obj1.width + obj2.width));
 	float y_distance = fabs(obj1.y - obj2.y) - ((obj1.height + obj2.height));
-	if (x_distance <= 0 && y_distance <= 0) {
+	if (x_distance < 0 && y_distance < 0) {
 		return true;
 	}
 	return false;
 }
 
-
+bool offScreen(Entity ent) {
+	bool offX = true;
+	bool offY = true;
+	if (-100.0f < ent.x < 100.0f) {
+		offX = false;
+	}
+	if (-100.0f < ent.y < 100.0f) {
+		offY = false;
+	}
+	return offX && offY;
+}
 
 
 int main(int argc, char *argv[])
@@ -302,6 +309,7 @@ int main(int argc, char *argv[])
 	GLuint spriteSheetTexture = LoadTexture(RESOURCE_FOLDER"cuties.png");
 	GLuint fontTexture = LoadTexture(RESOURCE_FOLDER"font1.png");
 	GLuint floorTexture = LoadTexture(RESOURCE_FOLDER"JnRTiles.png");
+	GLuint backgroundTexture = LoadTexture(RESOURCE_FOLDER"backgrounds.png");
 	glClearColor(0.8f, 1.0f, 1.0f, 1.0f);
 
 	float lastFrameTicks = 0.0f;
@@ -317,19 +325,42 @@ int main(int argc, char *argv[])
 
 	// Creating objects 
 
-	Entity player = Entity(0.1f, 0.1f, 0.0f, 0.5f);
+	Entity player = Entity(0.1f, 0.1f, 0.0f, 1.0f);
 	player.sprite = SheetSprite(spriteSheetTexture, (float)(((int)17) % 6) / (float)6, (float)(((int)17) / 6) / (float)8, 1.0f / (float)6, 1.0f / (float)8, 0.2f);
 	player.entityType = ENTITY_PLAYER;
 	player.isStatic = false;
 	player.x_fric = 2.5f;
 	player.spriteData = { 17, 6, 8 };
 
-	/*
-		Entity floor = Entity(1.77f, 0.5f, 0.0f, -0.9f);
-		floor.sprite = SheetSprite(floorTexture, (float)(((int)15) % 18) / (float)18, (float)(((int)15) / 18) / (float)1, 1.0f / (float)18, 1.0f / (float)1, 1.0f);
-		floor.entityType = ENTITY_BLOCK;
-		floor.isStatic = true;
-	*/
+
+	Entity background = Entity(100.0f, 0.6f, 0.0f, 0.2f); 
+	background.isStatic = true; 
+	background.sprite = SheetSprite(backgroundTexture, 
+		((float)(((int)0) % 1) / (float)1),
+		((float)(((int)0) / 1) / (float)3), 
+		(1.0f / (float)1) * 4,
+		1.0f / (float)3, 
+		1.6f);
+	background.spriteData = { 0, 1, 3 }; 
+	background.yeet = true; 
+
+	std::vector<Entity> coins;
+	float start_x1 = -1.67f;
+	float start_y1 = 0.7f;
+	float u1 = (float)(((int)15) % 18) / (float)18;
+	float v1 = (float)(((int)15) / 18) / (float)1;
+	float width1 = 1.0f / (float)18;
+	float height1 = 1.0f / (float)1;
+	for (int j = 0; j < 30; j++) {
+		Entity newCoin = Entity(0.05f, 0.05f, (start_x1 + 0.3f * j), start_y1);
+		newCoin.isStatic = false;
+		newCoin.entityType = ENTITY_COIN;
+		newCoin.sprite = SheetSprite(floorTexture, u1, v1, width1, height1, 0.2f);
+		newCoin.spriteData = { 17, 18, 1 };
+		coins.push_back(newCoin);
+	}
+	
+
 	std::vector<Entity> floor;
 	float start_x = -1.67f;
 	float start_y = -0.7f;
@@ -370,6 +401,16 @@ int main(int argc, char *argv[])
 		float elapsed = ticks - lastFrameTicks;
 		lastFrameTicks = ticks;
 
+		animationElapsed += elapsed; 
+		if (animationElapsed > 1.0 / framesPerSecond) {
+			currentIndex++; 
+			animationElapsed = 0.0; 
+			if (currentIndex > numFrames - 1) {
+				currentIndex = 0; 
+			}
+		}
+		player.spriteData[0] = runAnimation[currentIndex]; 
+
 		while (SDL_PollEvent(&event)) {
 			if (event.type == SDL_QUIT || event.type == SDL_WINDOWEVENT_CLOSE) {
 				done = true;
@@ -377,7 +418,7 @@ int main(int argc, char *argv[])
 			if (event.type == SDL_KEYDOWN) {
 				if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
 					if (player.collidedBottom) {
-						player.y_vel += 5.0f;
+						player.y_vel += 9.80f;
 						player.collidedBottom = false;
 					}
 				}
@@ -387,15 +428,25 @@ int main(int argc, char *argv[])
 				}
 
 			}
+			if (event.type == SDL_KEYUP) {
+				if (event.key.keysym.scancode == SDL_SCANCODE_A || event.key.keysym.scancode == SDL_SCANCODE_D) {
+					runAnimation[0] = runAnimation[1]; 
+				}
+			}
 		}
 		if (keys[SDL_SCANCODE_A]) {
+			runAnimation[0] = backwardsframes[0];
+			runAnimation[1] = backwardsframes[1];
+
 			if (player.x > -1.67f) {
 				player.x_acc = -1.0f;
-
 			}
 		}
 		else if (keys[SDL_SCANCODE_D]) {
-			if (player.x < 1.67f) {
+			runAnimation[0] = forwardframes[0]; 
+			runAnimation[1] = forwardframes[1]; 
+
+			if (player.x <	100.0f) {
 				player.x_acc = 1.0f;
 			}
 		}
@@ -408,20 +459,37 @@ int main(int argc, char *argv[])
 		
 		while (elapsed >= FIXED_TIMESTEP) {
 			// Update
-			player.Update(FIXED_TIMESTEP); 
+			player.Update(FIXED_TIMESTEP);
 			player.x_acc = 0.0f;
-			for (Entity i : floor)
-			if (player.CollidesWith(i)) {
-				player.resolveCollisionY(i); 
-				player.collidedBottom = true;
+			for (Entity i : floor) {
+				if (player.CollidesWith(i)) {
+					player.resolveCollisionY(i);
+					player.collidedBottom = true;
+				}
 			}
+
+			for (int i = 0; i < coins.size(); i++) {
+				if (player.CollidesWith(coins[i])) {
+					coins[i].y += 3000.0f; 
+				}
+			}
+			coins.erase(std::remove_if(coins.begin(), coins.end(), offScreen), coins.end());
+
+			//coins.erase(std::remove_if(coins.begin(), coins.end(), player.CollidesWith), coins.end());
+		/*	for (Entity i : toRemove) {
+				coins.remove(i); 
+			}*/
 
 			elapsed -= FIXED_TIMESTEP;
 		}
 		accumulator = elapsed; 
 
 
+		background.Render(program); 
 		for (Entity i : floor) {
+			i.Render(program); 
+		}
+		for (Entity i : coins) {
 			i.Render(program); 
 		}
 		player.Render(program);
