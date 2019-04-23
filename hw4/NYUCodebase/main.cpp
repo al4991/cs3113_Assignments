@@ -213,10 +213,10 @@ public:
 		float y_dist = y - entity.y;
 		float y_pen = fabs(y_dist - height - entity.height);
 		if (entity.y > y) {
-			y -= y_pen + 0.03f;
+			y -= y_pen + 0.05f;
 		}
 		else {
-			y += y_pen + 0.03f; 
+			y += y_pen + 0.05f; 
 		}
 	}
 
@@ -307,6 +307,7 @@ int main(int argc, char *argv[])
 	program.Load(RESOURCE_FOLDER"vertex_textured.glsl", RESOURCE_FOLDER"fragment_textured.glsl");
 
 	GLuint spriteSheetTexture = LoadTexture(RESOURCE_FOLDER"cuties.png");
+	GLuint coinTexture = LoadTexture(RESOURCE_FOLDER"coin.png");
 	GLuint fontTexture = LoadTexture(RESOURCE_FOLDER"font1.png");
 	GLuint floorTexture = LoadTexture(RESOURCE_FOLDER"JnRTiles.png");
 	GLuint backgroundTexture = LoadTexture(RESOURCE_FOLDER"backgrounds.png");
@@ -326,29 +327,29 @@ int main(int argc, char *argv[])
 	// Creating objects 
 
 	Entity player = Entity(0.1f, 0.1f, 0.0f, 1.0f);
-	player.sprite = SheetSprite(spriteSheetTexture, (float)(((int)17) % 6) / (float)6, (float)(((int)17) / 6) / (float)8, 1.0f / (float)6, 1.0f / (float)8, 0.2f);
+	player.sprite = SheetSprite(spriteSheetTexture, (float)(((int)17) % 6) / (float)6, (float)(((int)17) / 6) / (float)8, 1.0f / (float)6, 1.0f / (float)8, 0.205f);
 	player.entityType = ENTITY_PLAYER;
 	player.isStatic = false;
 	player.x_fric = 2.5f;
 	player.spriteData = { 17, 6, 8 };
 
 
-	Entity background = Entity(100.0f, 0.6f, 0.0f, 0.2f); 
-	background.isStatic = true; 
-	background.sprite = SheetSprite(backgroundTexture, 
-		((float)(((int)0) % 1) / (float)1),
-		((float)(((int)0) / 1) / (float)3), 
-		(1.0f / (float)1) * 4,
-		1.0f / (float)3, 
-		1.6f);
-	background.spriteData = { 0, 1, 3 }; 
-	background.yeet = true; 
+	//Entity background = Entity(100.0f, 0.6f, 0.0f, 0.2f); 
+	//background.isStatic = true; 
+	//background.sprite = SheetSprite(backgroundTexture, 
+	//	((float)(((int)0) % 1) / (float)1),
+	//	((float)(((int)0) / 1) / (float)3), 
+	//	(1.0f / (float)1) * 4,
+	//	1.0f / (float)3, 
+	//	1.6f);
+	//background.spriteData = { 0, 1, 3 }; 
+	//background.yeet = true; 
 
 	std::vector<Entity> coins;
 	float start_x1 = -1.67f;
-	float start_y1 = 0.7f;
-	float u1 = (float)(((int)15) % 18) / (float)18;
-	float v1 = (float)(((int)15) / 18) / (float)1;
+	float start_y1 = 0.2f;
+	float u1 = (float)(((int)17) % 18) / (float)18;
+	float v1 = (float)(((int)17) / 18) / (float)1;
 	float width1 = 1.0f / (float)18;
 	float height1 = 1.0f / (float)1;
 	for (int j = 0; j < 30; j++) {
@@ -373,13 +374,16 @@ int main(int argc, char *argv[])
 		15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15,15
 	};
 	for (int i = 0; i < 2; i++) {
+		start_x = -1.67f;
 		for (int j = 0; j < 30; j++) {
-			Entity newBlock = Entity(0.2f, 0.2f, (start_x + 0.2f * j), start_y - 0.2f * i);
+			Entity newBlock = Entity(0.2f, 0.2f, (start_x/* + 0.2f * j*/), start_y - 0.2f * i);
 			newBlock.isStatic = true;
 			newBlock.entityType = ENTITY_BLOCK;
 			newBlock.sprite = SheetSprite(floorTexture, u, v, width, height, 0.2f);
 			newBlock.spriteData = { blocks[(i * 30) + j], 18, 1 };
 			floor.push_back(newBlock);
+			start_x += 0.2f;
+
 		}
 	}
 
@@ -418,15 +422,10 @@ int main(int argc, char *argv[])
 			if (event.type == SDL_KEYDOWN) {
 				if (event.key.keysym.scancode == SDL_SCANCODE_SPACE) {
 					if (player.collidedBottom) {
-						player.y_vel += 9.80f;
+						player.y_vel += 3.80f;
 						player.collidedBottom = false;
 					}
 				}
-				if (event.key.keysym.scancode == SDL_SCANCODE_S) {
-					
-					player.y_vel -= 5.0f; 
-				}
-
 			}
 			if (event.type == SDL_KEYUP) {
 				if (event.key.keysym.scancode == SDL_SCANCODE_A || event.key.keysym.scancode == SDL_SCANCODE_D) {
@@ -465,6 +464,8 @@ int main(int argc, char *argv[])
 				if (player.CollidesWith(i)) {
 					player.resolveCollisionY(i);
 					player.collidedBottom = true;
+					player.y_vel = 0.0f;
+					player.y_acc = 0.0f;
 				}
 			}
 
@@ -485,7 +486,7 @@ int main(int argc, char *argv[])
 		accumulator = elapsed; 
 
 
-		background.Render(program); 
+		//background.Render(program); 
 		for (Entity i : floor) {
 			i.Render(program); 
 		}
