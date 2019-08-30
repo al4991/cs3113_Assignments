@@ -325,7 +325,7 @@ int main(int argc, char *argv[])
 	glUseProgram(program.programID);
 
 	// Creating objects 
-
+	// .039f, .596, .674f
 	Entity player = Entity(0.1f, 0.1f, 0.0f, 1.0f);
 	player.sprite = SheetSprite(spriteSheetTexture, (float)(((int)17) % 6) / (float)6, (float)(((int)17) / 6) / (float)8, 1.0f / (float)6, 1.0f / (float)8, 0.205f);
 	player.entityType = ENTITY_PLAYER;
